@@ -4,7 +4,7 @@ import numpy as np
 
 def takePhoto():
     print("Initializing video")
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
         
     print("Shaping video")
     # Shapes video for fisheye fix adjustment
@@ -50,7 +50,7 @@ def takePhoto():
             print(f"Taking photo {str(picNumber)}")
             # save the image
             # imageName = f"./gestures/none/{str(picNumber)}.jpg"
-            imageName = f"./gestures/move/{str(picNumber)}.jpg"
+            imageName = f"./segmentation/{str(picNumber)}.jpg"
             cv2.imwrite(imageName, frame)
             picNumber += 1
     cap.release()

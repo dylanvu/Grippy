@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
 import time
+import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from cursor_movement import *
@@ -139,6 +140,17 @@ print("Shaping video")
 cap.set(3, 1920)
 cap.set(4, 1080)
 
+# Camera, fixing fisheye
+cameraMatrix = np.genfromtxt("./camera_matrix.txt")
+dist = np.genfromtxt("./distortion.txt")
+
+print("Getting adjusted camera matrix")
+
+ret, frame = cap.read()
+h, w = frame.shape[:2]
+
+newCameraMatrix, roi = cv2. getOptimalNewCameraMatrix(cameraMatrix, dist, (w, h), 1, (w, h))
+
 with handDetector(maxHands=1) as hands:
     while cap.isOpened():
         timestamp = int(time.time() * 1000) # current time in miliseconds
@@ -149,19 +161,27 @@ with handDetector(maxHands=1) as hands:
             print("Ignoring empty camera frame.")
             # If loading a video, use 'break' instead of 'continue'.
             continue
+            
+        # flip
+        # image = cv2.flip(image, 1)
+        # undistort
+        image = cv2.undistort(image, cameraMatrix, dist, None, newCameraMatrix)
+        x, y, w, h = roi
+        image = image[y:y+h, x:x+w]
         image, landmark = hands.findHands(image)
-        
-        landmark_x = landmark.x #0.5
-        landmark_y = landmark.y #0.5
-        
-        # get screen size
-        screen_x, screen_y = getScreenSize()
-        
-        # normalizing screen size
-        new_screen_x = landmark_x * screen_x
-        new_screen_y = landmark_y * screen_y
-        
-        moveCursor(new_screen_x, new_screen_y)
+
+        if landmark:
+            landmark_x = landmark.x 
+            landmark_y = landmark.y 
+            
+            # get screen size
+            screen_x, screen_y = getScreenSize()
+            
+            # normalizing screen size
+            new_screen_x = landmark_x * screen_x
+            new_screen_y = landmark_y * screen_y
+            
+            moveCursor(new_screen_x, new_screen_y)
         
         
         # lmlist = hands.findPosition(image)
