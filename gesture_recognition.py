@@ -3,6 +3,7 @@ import mediapipe as mp
 import time
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+from cursor_movement import *
 
 # Create a gesture recognizer instance with the live stream mode:
 def print_result(result: mp.tasks.vision.GestureRecognizerResult, output_image: mp.Image, timestamp_ms: int):
@@ -68,6 +69,8 @@ class handDetector():
         # draw hand annotations on the image
         img.flags.writeable = True
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        index_landmark = None
+        
         if self.results.multi_hand_landmarks:
             for i, handlms in enumerate(self.results.multi_hand_landmarks):   
                 '''
@@ -84,9 +87,9 @@ class handDetector():
                     for landmark_index, landmark in enumerate(handlms.landmark):
                         if landmark_index == 8:
                             print("index finger point:", landmark)# TESTING
-                            
+                            index_landmark = landmark
 
-        return img
+        return (img, index_landmark)
     
     # def findPosition(self,img,handNo=0,draw=True):
         
@@ -146,7 +149,21 @@ with handDetector(maxHands=1) as hands:
             print("Ignoring empty camera frame.")
             # If loading a video, use 'break' instead of 'continue'.
             continue
-        image = hands.findHands(image)
+        image, landmark = hands.findHands(image)
+        
+        landmark_x = landmark.x #0.5
+        landmark_y = landmark.y #0.5
+        
+        # get screen size
+        screen_x, screen_y = getScreenSize()
+        
+        # normalizing screen size
+        new_screen_x = landmark_x * screen_x
+        new_screen_y = landmark_y * screen_y
+        
+        moveCursor(new_screen_x, new_screen_y)
+        
+        
         # lmlist = hands.findPosition(image)
         # hands.findPosition(image)
         # print(lmlist)
