@@ -41,7 +41,7 @@ class handDetector():
 
         # gesture recognizer
         # self.base_options = python.BaseOptions(model_asset_path='clicking.task')
-        self.base_options = python.BaseOptions(model_asset_path='gesture_recognizer.task')
+        self.base_options = python.BaseOptions(model_asset_buffer = open('./gesture_recognizer.task', "rb").read())
         self.options = vision.GestureRecognizerOptions(
             base_options=self.base_options,
             # canned_gestures_classifier_options = ["Thumb_Down"],
@@ -79,8 +79,12 @@ class handDetector():
                         self.mpHands.HAND_CONNECTIONS,
                         self.mp_drawing_styles.get_default_hand_landmarks_style(),
                         self.mp_drawing_styles.get_default_hand_connections_style())
-                if i == 8:
-                    print("index finger point:", self.results.multi_hand_landmarks[-1].landmark(8))# TESTING
+                    
+                    # iterate through the landmarks to get the 8th one
+                    for landmark_index, landmark in enumerate(handlms.landmark):
+                        if landmark_index == 8:
+                            print("index finger point:", landmark)# TESTING
+                            
 
         return img
     
@@ -125,13 +129,18 @@ class handDetector():
 
 
 # For webcam input:
+print("Initializing video")
 cap = cv2.VideoCapture(0)
+
+print("Shaping video")
+cap.set(3, 1920)
+cap.set(4, 1080)
 
 with handDetector(maxHands=1) as hands:
     while cap.isOpened():
         timestamp = int(time.time() * 1000) # current time in miliseconds
 
-        timestamp = mp.Timestamp() / 1000 # TESTING
+        # timestamp = mp.Timestamp() / 1000 # TESTING
         success, image = cap.read()
         if not success:
             print("Ignoring empty camera frame.")
