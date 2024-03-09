@@ -2,7 +2,8 @@ import speech_recognition as sr
 from dotenv import load_dotenv
 import os
 load_dotenv()
-# pip install openai==0.28 openai-whisper soundfile
+# pip install SpeechRecognition dotenv speechopenai==0.28 openai-whisper soundfile
+# pyaudio varies: https://pypi.org/project/SpeechRecognition/
 
 class SpeechTranscriber():
     def __init__(self, api_on:bool=False, api_key:str=None):
