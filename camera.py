@@ -25,7 +25,7 @@ def takePhoto():
     
     newCameraMatrix, roi = cv2. getOptimalNewCameraMatrix(cameraMatrix, dist, (w, h), 1, (w, h))
 
-    picNumber = 113
+    picNumber = 0
 
     print("Video started")
 
@@ -50,7 +50,7 @@ def takePhoto():
             print(f"Taking photo {str(picNumber)}")
             # save the image
             # imageName = f"./gestures/none/{str(picNumber)}.jpg"
-            imageName = f"./gestures/click/{str(picNumber)}.jpg"
+            imageName = f"./segmentation/images/{str(picNumber)}.jpg"
             cv2.imwrite(imageName, frame)
             picNumber += 1
     cap.release()
