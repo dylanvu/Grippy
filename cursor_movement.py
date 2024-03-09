@@ -2,6 +2,8 @@ import pyautogui
 import math
 import time
 
+pyautogui.FAILSAFE = False
+
 def getScreenSize():
     return pyautogui.size()
 
