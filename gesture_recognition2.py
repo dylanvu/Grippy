@@ -67,7 +67,7 @@ class handDetector():
         base_options = python.BaseOptions(model_asset_path='gesture_recognizer.task')
 
         gesture_options = vision.GestureRecognizerOptions(
-            base_options=self.base_options,
+            base_options=base_options,
             running_mode=mp.tasks.vision.RunningMode.LIVE_STREAM,
             num_hands=maxHands,
             result_callback=print_result)
@@ -78,14 +78,16 @@ class handDetector():
             running_mode=mp.tasks.vision.RunningMode.LIVE_STREAM,
             num_hands=maxHands,
             result_callback=print_result_landmark)
-        self.detector = vision.HandLandmarker.create_from_options(landmark_options)
+        self.landmarker = vision.HandLandmarker.create_from_options(landmark_options)
         # https://developers.google.com/mediapipe/solutions/vision/hand_landmarker/python
         self.results = None
 
         
     def __del__(self):
-        self.recognizer.close()
-        self.landmarker.close()
+        if hasattr(self, 'recognizer'):
+            self.recognizer.close()
+        if hasattr(self, 'landmarker'):
+            self.landmarker.close()
 
     def detectHands(self,mp_img:mp.Image, frame_timestamp_ms):
         self.landmarker.detect_async(mp_image, frame_timestamp_ms)
@@ -154,7 +156,7 @@ class handDetector():
 # For webcam input:
 cap = cv2.VideoCapture(0)
 
-with handDetector(maxHands=1) as hands:
+with handDetector(maxHands=2) as hands:
     while cap.isOpened():
         timestamp = int(time.time() * 1000) # current time in miliseconds
 
