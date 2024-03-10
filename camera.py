@@ -8,9 +8,9 @@ def takePhoto():
         
     print("Shaping video")
     # Shapes video for fisheye fix adjustment
-    codec = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
-    cap.set(6, codec)
-    cap.set(5, 30)
+    # codec = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
+    # cap.set(6, codec)
+    # cap.set(5, 30)
     cap.set(3, 1920)
     cap.set(4, 1080)
     
@@ -25,7 +25,7 @@ def takePhoto():
     
     newCameraMatrix, roi = cv2. getOptimalNewCameraMatrix(cameraMatrix, dist, (w, h), 1, (w, h))
 
-    picNumber = 0
+    picNumber = 145
 
     print("Video started")
 
@@ -50,7 +50,7 @@ def takePhoto():
             print(f"Taking photo {str(picNumber)}")
             # save the image
             # imageName = f"./gestures/none/{str(picNumber)}.jpg"
-            imageName = f"./segmentation/images/{str(picNumber)}.jpg"
+            imageName = f"./segmentation/{str(picNumber)}.jpg"
             cv2.imwrite(imageName, frame)
             picNumber += 1
     cap.release()
