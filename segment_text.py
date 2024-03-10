@@ -192,8 +192,6 @@ def convert_to_relative(coords, corner_points):
     min_y = min(corner_points[0][1], corner_points[1][1], corner_points[2][1], corner_points[3][1])
     max_y = max(corner_points[0][1], corner_points[1][1], corner_points[2][1], corner_points[3][1])
 
-    print("COORDS:", coords)
-    print("CORNERS:", corner_points)
 
     # Check if the point lies within the rectangle
     if min_x <= coords[0] <= max_x and min_y <= coords[1] <= max_y:
@@ -204,11 +202,9 @@ def convert_to_relative(coords, corner_points):
         relative_y = coords[1] - top_left[1]
 
         relative_coords = [relative_x, relative_y]
-        # print("RELATIVE:", relative_coords)
 
         return relative_coords
     else:
-        # print("OUT OF BOUNDS")
         return None
 
 width, height = FRAME_WIDTH, FRAME_HEIGHT

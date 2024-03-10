@@ -66,7 +66,6 @@ class handDetector():
 
     def findHands(self,img,draw=True):
         img.flags.writeable = False
-        # img = cv2.flip(img,1)
         img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         self.results = self.hands.process(img)
         # print(self.results.multi_hand_landmarks)
@@ -172,8 +171,6 @@ with handDetector(maxHands=1) as hands:
             # If loading a video, use 'break' instead of 'continue'.
             continue
             
-        # flip
-        # image = cv2.flip(image, 1)
         # undistort
         image = cv2.undistort(image, cameraMatrix, dist, None, newCameraMatrix)
         x, y, w, h = roi
@@ -195,13 +192,14 @@ with handDetector(maxHands=1) as hands:
             # get screen size
             screen_x, screen_y = getScreenSize()
 
-            print("SIZE:", [screen_x, screen_y])
-            
             # normalizing screen size
-            new_screen_x = landmark_x * screen_x
-            new_screen_y = landmark_y * screen_y
+            # hardcode an offset
+            new_screen_x = landmark_x * screen_x - 234
+            new_screen_y = landmark_y * screen_y - 259
 
-            print("SCREEN:", [new_screen_x, new_screen_y])
+            # print("SCREEN:", [new_screen_x, new_screen_y])
+
+            # print("OFFSET SCREEN:", [new_screen_x - 234, new_screen_y - 259])
 
             moveCursor(new_screen_x, new_screen_y)
         
