@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import sys
 import asyncio
 from typing import Tuple
+import string
 load_dotenv()
 # pip install SpeechRecognition python-dotenv openai==0.28 openai-whisper soundfile 
 # pyaudio varies: https://pypi.org/project/SpeechRecognition/
@@ -173,6 +174,9 @@ class SpeechTranscriber():
                         print(f"Command detected: {cmd}")
                         cmd_index = transcription.index(cmd)
                         substring = transcription[cmd_index + len(cmd):]
+                        while substring and substring[0] in string.punctuation:
+                            substring = substring[1:]
+                        substring = substring.strip()
                         self.set_current_command(cmd, substring)
                         return self.commands[command_list]
     
