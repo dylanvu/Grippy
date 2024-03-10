@@ -184,7 +184,6 @@ with handDetector(maxHands=1) as hands:
         # segment
         image, landmark = applySegmentation(M, image, landmark, warped_hull_points)
 
-        # TODO: check to see if coordinate
         if landmark:
             landmark_x = landmark[0]
             landmark_y = landmark[1] 
@@ -194,16 +193,22 @@ with handDetector(maxHands=1) as hands:
 
             # normalizing screen size
             # hardcode an offset
-            new_screen_x = landmark_x * screen_x - 234
-            new_screen_y = landmark_y * screen_y - 259
+            new_screen_x = landmark_x * screen_x
+            new_screen_y = landmark_y * screen_y
 
             # print("SCREEN:", [new_screen_x, new_screen_y])
 
-            # print("OFFSET SCREEN:", [new_screen_x - 234, new_screen_y - 259])
+            offset_screen_x = new_screen_x
+            offset_screen_y = new_screen_y
 
-            moveCursor(new_screen_x, new_screen_y)
+
+            # print("OFFSET SCREEN:", [offset_screen_x, offset_screen_y])
+
+            moveCursor(offset_screen_x, offset_screen_y)
         
-        
+        else:
+            # print("NO HANDS")
+            pass
         # lmlist = hands.findPosition(image)
         # hands.findPosition(image)
         # print(lmlist)

@@ -8,6 +8,8 @@ from io import BytesIO
 from lang_sam import LangSAM
 import cv2
 from constants import FRAME_HEIGHT, FRAME_WIDTH
+from cursor_movement import *
+
 
 def download_image(url):
     response = requests.get(url)
@@ -207,7 +209,7 @@ def convert_to_relative(coords, corner_points):
     else:
         return None
 
-width, height = FRAME_WIDTH, FRAME_HEIGHT
+width, height = getScreenSize()
 
 # the main function
 def segmentImage(image):
@@ -221,21 +223,6 @@ def segmentImage(image):
     # Calculate the best-fit quadrilateral
     mask = find_largest_component(masks_np[0])
     hull = appx_best_fit_ngon_from_mask(mask, n=4)
-    # Convert PIL Image to NumPy array for plotting
-    # image_np = np.array(image_pil)
-
-    # # Create figure and axes for plotting
-    # fig, ax = plt.subplots()
-
-    # # Display the original image
-    # ax.imshow(image_np)
-
-    # # Draw the quadrilateral
-    # x, y = zip(*hull)  # Unpack the hull points
-    # ax.plot(x + (x[0],), y + (y[0],), 'r-', marker='o', markersize=5, linestyle="-", color='green')  # Close the shape
-
-    # plt.axis('off')  # Hide the axes
-    # plt.show()
 
     # The hull points you have obtained
 
