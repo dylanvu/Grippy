@@ -13,22 +13,31 @@ def getScreenSize():
 # function to move the cursor
 def moveCursor(x_coord, y_coord):
     pyautogui.moveTo(x_coord, y_coord, duration=0.2)
+    # pyautogui.moveTo(x_coord, y_coord)
 
 # function to click
 # TODO: fix problem specified below:
     # how do we know to click first, or click after movement?
     # -> async problem?
+
+def keyboard(phrase:str, secs_between_keys:int=0.05):
+    pyautogui.typewrite(phrase, interval=secs_between_keys)  # useful for entering text, newline is Enter
+
+
+
 def clickCursor(click, button):
     if click:
         if button == 'left':
             pyautogui.mouseDown(button='left')
-            time.sleep(0.5)
+            time.sleep(0.1)
             pyautogui.mouseUp()
             
         elif button == 'right':
             pyautogui.mouseDown(button='right')
-            time.sleep(0.5)
+            time.sleep(0.1)
             pyautogui.mouseUp()
+
+
 
 # helper function to drag to calculate drag duration       
 def calculate_drag_duration(start_x, start_y, end_x, end_y, base_speed=0.05, exponential_factor=0.5):
@@ -62,6 +71,13 @@ def screenShot():
     filename = f"screenshot_{timestamp}.png"  # Construct a filename with the timestamp
     pyautogui.screenshot(filename)
 
+# keyboard write
+def writeKeyboard(string):
+    pyautogui.write(string)
+
+# delete word ctrl + backspace
+def deleteWord():
+    pyautogui.hotkey('ctrl', 'backspace')
     
 # function to test other functions
 def debug():
@@ -121,7 +137,7 @@ def scrollDebug():
     scrollCursor(start_y, end_y)
 
 def main():
-    scrollDebug()
+    writeKeyboard("Hello")
     
 
 if __name__ == "__main__":

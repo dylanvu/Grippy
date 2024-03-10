@@ -6,7 +6,6 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from cursor_movement import *
 from segment_text import *
-import matplotlib.pyplot as plt
 from constants import FRAME_WIDTH, FRAME_HEIGHT
 
 # Create a gesture recognizer instance with the live stream mode:
@@ -134,94 +133,96 @@ class handDetector():
         return (top_gesture, hand_landmarks)
     
     
+if __name__ == '__main__':
+    # For webcam input:
+    print("Initializing video")
+    cap = cv2.VideoCapture(0)
+
+    print("Shaping video")
+    cap.set(3, 1920)
+    cap.set(4, 1080)
+
+    # Camera, fixing fisheye
+    cameraMatrix = np.genfromtxt("./camera_matrix.txt")
+    dist = np.genfromtxt("./distortion.txt")
+
+    print("Shaping video")
+    cap.set(3, FRAME_WIDTH)
+    cap.set(4, FRAME_HEIGHT)
+    print("Getting adjusted camera matrix")
+
+    ret, frame = cap.read()
+    h, w = frame.shape[:2]
+
+    newCameraMatrix, roi = cv2. getOptimalNewCameraMatrix(cameraMatrix, dist, (w, h), 1, (w, h))
+
+    M = None
+    warped_hull_points = []
+
+    print("Opening video feed")
+
+    with handDetector(maxHands=1) as hands:
+        while cap.isOpened():
+            timestamp = int(time.time() * 1000) # current time in miliseconds
+
+            # timestamp = mp.Timestamp() / 1000 # TESTING
+            success, image = cap.read()
+            if not success:
+                print("Ignoring empty camera frame.")
+                # If loading a video, use 'break' instead of 'continue'.
+                continue
+                
+            # undistort
+            image = cv2.undistort(image, cameraMatrix, dist, None, newCameraMatrix)
+            x, y, w, h = roi
+            image = image[y:y+h, x:x+w]
+            if M is None:
+                print("Getting segmentation matrix")
+                # get the segmentation matrix
+                M, warped_hull_points = segmentImage(image)
+            # get coordinates
+            image, landmark = hands.findHands(image)
+            # segment
+            image, landmark = applySegmentation(M, image, landmark, warped_hull_points)
+
+            if landmark:
+                landmark_x = landmark[0]
+                landmark_y = landmark[1] 
+                
+                # get screen size
+                screen_x, screen_y = getScreenSize()
+
+                # normalizing screen size
+                # hardcode an offset
+                new_screen_x = landmark_x * screen_x
+                new_screen_y = landmark_y * screen_y
+
+                # print("SCREEN:", [new_screen_x, new_screen_y])
+
+                offset_screen_x = new_screen_x
+                offset_screen_y = new_screen_y
 
 
-# For webcam input:
-print("Initializing video")
-cap = cv2.VideoCapture(0)
+                # print("OFFSET SCREEN:", [offset_screen_x, offset_screen_y])
 
-print("Shaping video")
-cap.set(3, FRAME_WIDTH)
-cap.set(4, FRAME_HEIGHT)
-
-# Camera, fixing fisheye
-cameraMatrix = np.genfromtxt("./camera_matrix.txt")
-dist = np.genfromtxt("./distortion.txt")
-
-print("Getting adjusted camera matrix")
-
-ret, frame = cap.read()
-h, w = frame.shape[:2]
-
-newCameraMatrix, roi = cv2. getOptimalNewCameraMatrix(cameraMatrix, dist, (w, h), 1, (w, h))
-
-M = None
-warped_hull_points = []
-
-print("Opening video feed")
-
-with handDetector(maxHands=1) as hands:
-    while cap.isOpened():
-        timestamp = int(time.time() * 1000) # current time in miliseconds
-
-        # timestamp = mp.Timestamp() / 1000 # TESTING
-        success, image = cap.read()
-        if not success:
-            print("Ignoring empty camera frame.")
-            # If loading a video, use 'break' instead of 'continue'.
-            continue
+                moveCursor(offset_screen_x, offset_screen_y)
             
-        # undistort
-        image = cv2.undistort(image, cameraMatrix, dist, None, newCameraMatrix)
-        x, y, w, h = roi
-        image = image[y:y+h, x:x+w]
-        if M is None:
-            print("Getting segmentation matrix")
-            # get the segmentation matrix
-            M, warped_hull_points = segmentImage(image)
-        # get coordinates
-        image, landmark = hands.findHands(image)
-        # segment
-        image, landmark = applySegmentation(M, image, landmark, warped_hull_points)
-
-        if landmark:
-            landmark_x = landmark[0]
-            landmark_y = landmark[1] 
-            
-            # get screen size
-            screen_x, screen_y = getScreenSize()
-
-            # normalizing screen size
-            # hardcode an offset
-            new_screen_x = landmark_x * screen_x
-            new_screen_y = landmark_y * screen_y
-
-            # print("SCREEN:", [new_screen_x, new_screen_y])
-
-            offset_screen_x = new_screen_x
-            offset_screen_y = new_screen_y
+            else:
+                # print("NO HANDS")
+                pass
+            # lmlist = hands.findPosition(image)
+            # hands.findPosition(image)
+            # print(lmlist)
 
 
-            # print("OFFSET SCREEN:", [offset_screen_x, offset_screen_y])
+            # mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
+            # top_gesture, hand_landmarks = hands.recognizeGesture(mp_image, timestamp)
 
-            moveCursor(offset_screen_x, offset_screen_y)
-        
-        else:
-            # print("NO HANDS")
-            pass
-        # lmlist = hands.findPosition(image)
-        # hands.findPosition(image)
-        # print(lmlist)
-
-
-        # mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
-        # top_gesture, hand_landmarks = hands.recognizeGesture(mp_image, timestamp)
-
-        cv2.imshow('MediaPipe Hands', image)
-        # plt.imshow(image)
-        # plt.axis('off')  # Hide the axes
-        # plt.show()
-        if cv2.waitKey(5) & 0xFF == 27:
-            break
-cap.release()
-cv2.destroyAllWindows() 
+            cv2.imshow('MediaPipe Hands', image)
+            # plt.imshow(image)
+            # plt.axis('off')  # Hide the axes
+            # plt.show()
+            if cv2.waitKey(5) & 0xFF == 27:
+                break
+    cap.release()
+    cv2.destroyAllWindows() 
