@@ -184,10 +184,10 @@ def order_points(pts):
 width, height = 800, 600
 
 # the main function
-def segmentImage(image, landmark):
+def segmentImage(image):
     text_prompt = "screen"
     model = LangSAM(sam_type='vit_b')
-    # image_pil = Image.fromarray(image)
+    image_pil = Image.fromarray(image)
     masks, boxes, phrases, logits = model.predict(image_pil, text_prompt)
     masks_np = [mask.squeeze().cpu().numpy() for mask in masks]
     # display_image_with_masks(image_pil, masks_np)
@@ -240,6 +240,9 @@ def applySegmentation(M, image, landmark):
         warped_coordinate = np.dot(M, landmark_point)
         warped_x, warped_y = warped_coordinate[0, 0], warped_coordinate[1, 0]
         warped_landmark_coordinate = (warped_x, warped_y)
+        # TODO: check if the new coordinates are in bounds
+        # if in bounds, return coordinates
+        # else, return None
 
 
     return (warped_image, warped_landmark_coordinate)

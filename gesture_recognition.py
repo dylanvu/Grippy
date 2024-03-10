@@ -5,7 +5,8 @@ import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from cursor_movement import *
-from display_segmentation.segment_text import applySegmentation
+from segment_text import *
+import matplotlib.pyplot as plt
 
 # Create a gesture recognizer instance with the live stream mode:
 def print_result(result: mp.tasks.vision.GestureRecognizerResult, output_image: mp.Image, timestamp_ms: int):
@@ -152,6 +153,10 @@ h, w = frame.shape[:2]
 
 newCameraMatrix, roi = cv2. getOptimalNewCameraMatrix(cameraMatrix, dist, (w, h), 1, (w, h))
 
+M = None
+
+print("Opening video feed")
+
 with handDetector(maxHands=1) as hands:
     while cap.isOpened():
         timestamp = int(time.time() * 1000) # current time in miliseconds
@@ -169,11 +174,18 @@ with handDetector(maxHands=1) as hands:
         image = cv2.undistort(image, cameraMatrix, dist, None, newCameraMatrix)
         x, y, w, h = roi
         image = image[y:y+h, x:x+w]
+        if M is None:
+            print("Getting segmentation matrix")
+            # get the segmentation matrix
+            M = segmentImage(image)
         # get coordinates
         image, landmark = hands.findHands(image)
         # segment
-        image, landmark = applySegmentation(image, landmark)
+        image, landmark = applySegmentation(M, image, landmark)
 
+        print("Transformed:", landmark)
+
+        # TODO: check to see if coordinate
         if landmark:
             landmark_x = landmark[0]
             landmark_y = landmark[1] 
@@ -184,7 +196,7 @@ with handDetector(maxHands=1) as hands:
             # normalizing screen size
             new_screen_x = landmark_x * screen_x
             new_screen_y = landmark_y * screen_y
-            
+
             moveCursor(new_screen_x, new_screen_y)
         
         
@@ -193,10 +205,13 @@ with handDetector(maxHands=1) as hands:
         # print(lmlist)
 
 
-        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
-        top_gesture, hand_landmarks = hands.recognizeGesture(mp_image, timestamp)
+        # mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
+        # top_gesture, hand_landmarks = hands.recognizeGesture(mp_image, timestamp)
 
-        cv2.imshow('MediaPipe Hands', cv2.flip(image, 1))
+        cv2.imshow('MediaPipe Hands', image)
+        # plt.imshow(image)
+        # plt.axis('off')  # Hide the axes
+        # plt.show()
         if cv2.waitKey(5) & 0xFF == 27:
             break
 cap.release()
