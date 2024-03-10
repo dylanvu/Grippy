@@ -3,7 +3,7 @@ import os
 from pynput import keyboard
 from dotenv import load_dotenv
 load_dotenv()
-# pip install SpeechRecognition python-dotenv openai==0.28 openai-whisper soundfile pynput
+# pip install SpeechRecognition python-dotenv openai==0.28 openai-whisper soundfile 
 # pyaudio varies: https://pypi.org/project/SpeechRecognition/
 
 class SpeechTranscriber():
@@ -64,7 +64,7 @@ class SpeechTranscriber():
                 print("Whisper could not understand audio")
             except sr.RequestError as e:
                 print("Could not request results from Whisper")
-            pass
+                pass
         return transcription
 
     def listen_until_wake(self):
@@ -114,6 +114,11 @@ class SpeechTranscriber():
                     print(f"Command detected: {cmd}")
                     self.current_command = cmd
                     return cmd
+    
+    def listen_threaded(self):
+        if self.commands is None:
+            raise ValueError("Error: initialize commands first `add_commands(array)`)")
+        
 
     """
         always listens until a pause
@@ -125,6 +130,11 @@ class SpeechTranscriber():
             # listens until a pause
             command = self.listen_for_commands()
             print(command)
+
+    def main_loop_threaded(self):
+        while True:
+            self.listen_threaded()
+    
 
 def main():
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -140,8 +150,6 @@ def main():
     })
     speech_transcriber.main_loop()
 
-
-    
 
 if __name__ == '__main__':
     main()
