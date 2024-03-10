@@ -4,6 +4,9 @@ import time
 
 pyautogui.FAILSAFE = False
 
+pyautogui.FAILSAFE = False
+
+# function to return screen size
 def getScreenSize():
     return pyautogui.size()
 
@@ -26,23 +29,41 @@ def clickCursor(click, button):
             pyautogui.mouseDown(button='right')
             time.sleep(0.5)
             pyautogui.mouseUp()
-            
+
+# helper function to drag to calculate drag duration       
 def calculate_drag_duration(start_x, start_y, end_x, end_y, base_speed=0.05, exponential_factor=0.5):
     distance = math.sqrt((end_x - start_x)**2 + (end_y - start_y)**2)
     duration = base_speed * math.pow(distance, exponential_factor)
     return duration
 
 # function to drag cursor
-# TODO: fix problem
-    # maybe make the math more accurate lol
+# MAYBE TODO: can make the math more accurate for duration, works OK for now
 def dragCursor(x_coord, y_coord, drag_duration, button_type):
     # drag the tab
     pyautogui.dragTo(x_coord, y_coord, duration=drag_duration,button=button_type)
 
-# function to release the mouse button
-def releaseMouse():
-    pyautogui.mouseUp()
+# TODO: scroll down
+# function to scroll down
+def scrollCursor(start_y, end_y):
+    distance = start_y - end_y
+    print(distance)
+    pyautogui.scroll(distance)
 
+# maybe this is not necessary
+# scroll uses clicks to go
+def convertClicksToPixels(pixels_to_scroll):
+    pixels_per_click = 20
+    clicks_to_scroll = pixels_to_scroll / pixels_per_click
+    return clicks_to_scroll
+
+# take a screen shot and include timestamp
+def screenShot():
+    timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")  # Generate a timestamp
+    filename = f"screenshot_{timestamp}.png"  # Construct a filename with the timestamp
+    pyautogui.screenshot(filename)
+
+    
+# function to test other functions
 def debug():
     # getting screen resolution
     print(pyautogui.size())
@@ -63,7 +84,7 @@ def debug():
         coord_x = int(coord_x)
         coord_y = int(coord_y)
         
-        press_input = input("Do you want to click or drag? (click/drag/no): ")
+        press_input = input("Do you want to click, drag? (click/drag/no): ")
         click_flag = False
         drag_flag = False
         
@@ -94,13 +115,13 @@ def debug():
         
         
         # time.sleep(3)
+def scrollDebug():
+    start_y = 415
+    end_y = 633
+    scrollCursor(start_y, end_y)
 
 def main():
-    # # debug function call
-    # debug()
-    pass
-    
-    
+    scrollDebug()
     
 
 if __name__ == "__main__":
