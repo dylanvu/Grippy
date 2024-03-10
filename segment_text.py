@@ -7,6 +7,7 @@ from PIL import Image
 from io import BytesIO
 from lang_sam import LangSAM
 import cv2
+from constants import FRAME_HEIGHT, FRAME_WIDTH
 
 def download_image(url):
     response = requests.get(url)
@@ -238,11 +239,10 @@ def applySegmentation(M, image, landmark):
     if landmark:
         landmark_point = np.array([[landmark.x], [landmark.y], [1]])
         warped_coordinate = np.dot(M, landmark_point)
-        warped_x, warped_y = warped_coordinate[0, 0], warped_coordinate[1, 0]
+        warped_x, warped_y = warped_coordinate[0, 0] / FRAME_WIDTH, warped_coordinate[1, 0] / FRAME_WIDTH
         warped_landmark_coordinate = (warped_x, warped_y)
         # TODO: check if the new coordinates are in bounds
-        # if in bounds, return coordinates
-        # else, return None
+        # if in bounds, normalize it compared to the segmented images and return it
 
 
     return (warped_image, warped_landmark_coordinate)

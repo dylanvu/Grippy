@@ -7,6 +7,7 @@ from mediapipe.tasks.python import vision
 from cursor_movement import *
 from segment_text import *
 import matplotlib.pyplot as plt
+from constants import FRAME_WIDTH, FRAME_HEIGHT
 
 # Create a gesture recognizer instance with the live stream mode:
 def print_result(result: mp.tasks.vision.GestureRecognizerResult, output_image: mp.Image, timestamp_ms: int):
@@ -91,6 +92,9 @@ class handDetector():
                         if landmark_index == 8:
                             print("index finger point:", landmark)# TESTING
                             index_landmark = landmark
+                            # unnormalize it
+                            index_landmark.x = index_landmark.x * FRAME_WIDTH
+                            index_landmark.y = index_landmark.y * FRAME_HEIGHT
 
         return (img, index_landmark)
     
@@ -139,8 +143,8 @@ print("Initializing video")
 cap = cv2.VideoCapture(0)
 
 print("Shaping video")
-cap.set(3, 1920)
-cap.set(4, 1080)
+cap.set(3, FRAME_WIDTH)
+cap.set(4, FRAME_HEIGHT)
 
 # Camera, fixing fisheye
 cameraMatrix = np.genfromtxt("./camera_matrix.txt")
