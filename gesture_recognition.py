@@ -157,6 +157,7 @@ h, w = frame.shape[:2]
 newCameraMatrix, roi = cv2. getOptimalNewCameraMatrix(cameraMatrix, dist, (w, h), 1, (w, h))
 
 M = None
+warped_hull_points = []
 
 print("Opening video feed")
 
@@ -180,13 +181,11 @@ with handDetector(maxHands=1) as hands:
         if M is None:
             print("Getting segmentation matrix")
             # get the segmentation matrix
-            M = segmentImage(image)
+            M, warped_hull_points = segmentImage(image)
         # get coordinates
         image, landmark = hands.findHands(image)
         # segment
-        image, landmark = applySegmentation(M, image, landmark)
-
-        print("Transformed:", landmark)
+        image, landmark = applySegmentation(M, image, landmark, warped_hull_points)
 
         # TODO: check to see if coordinate
         if landmark:
@@ -195,10 +194,14 @@ with handDetector(maxHands=1) as hands:
             
             # get screen size
             screen_x, screen_y = getScreenSize()
+
+            print("SIZE:", [screen_x, screen_y])
             
             # normalizing screen size
             new_screen_x = landmark_x * screen_x
             new_screen_y = landmark_y * screen_y
+
+            print("SCREEN:", [new_screen_x, new_screen_y])
 
             moveCursor(new_screen_x, new_screen_y)
         

@@ -182,6 +182,35 @@ def order_points(pts):
     # bottom-right, and bottom-left order
     return np.array([tl, tr, br, bl], dtype="float32")
 
+def convert_to_relative(coords, corner_points):
+
+    # check if the point is in the rectangle
+
+    # Find minimum and maximum x and y coordinates of the rectangle
+    min_x = min(corner_points[0][0], corner_points[1][0], corner_points[2][0], corner_points[3][0])
+    max_x = max(corner_points[0][0], corner_points[1][0], corner_points[2][0], corner_points[3][0])
+    min_y = min(corner_points[0][1], corner_points[1][1], corner_points[2][1], corner_points[3][1])
+    max_y = max(corner_points[0][1], corner_points[1][1], corner_points[2][1], corner_points[3][1])
+
+    print("COORDS:", coords)
+    print("CORNERS:", corner_points)
+
+    # Check if the point lies within the rectangle
+    if min_x <= coords[0] <= max_x and min_y <= coords[1] <= max_y:
+        # convert these to relative
+        # top left will be the first point
+        top_left = corner_points[0]
+        relative_x = coords[0] - top_left[0]
+        relative_y = coords[1] - top_left[1]
+
+        relative_coords = [relative_x, relative_y]
+        # print("RELATIVE:", relative_coords)
+
+        return relative_coords
+    else:
+        # print("OUT OF BOUNDS")
+        return None
+
 width, height = FRAME_WIDTH, FRAME_HEIGHT
 
 # the main function
@@ -221,14 +250,22 @@ def segmentImage(image):
     # Calculate the perspective transform matrix
     M = cv2.getPerspectiveTransform(hull_points, destination_points)
 
-    return M
+    # use the perspective transform matrix to calculate the new position of the screen
+    warped_hull_points = []
+    for point in hull_points:
+        hull_point = np.array([[point[0]], [point[1]], [1]])
+        warped_hull_coordinate = np.dot(M, hull_point)
+        warped_hull_x, warped_hull_y = warped_hull_coordinate[0, 0], warped_hull_coordinate[1, 0]
+        warped_hull_points.append([warped_hull_x, warped_hull_y])
+    
+    return (M, warped_hull_points)
 
     # # Show the result using matplotlib
     # plt.imshow(warped_image)
     # plt.axis('off')  # Hide the axes
     # plt.show()
 
-def applySegmentation(M, image, landmark):
+def applySegmentation(M, image, landmark, warped_hull_points):
     image_pil = Image.fromarray(image)
     image_np = np.array(image_pil)
 
@@ -239,10 +276,15 @@ def applySegmentation(M, image, landmark):
     if landmark:
         landmark_point = np.array([[landmark.x], [landmark.y], [1]])
         warped_coordinate = np.dot(M, landmark_point)
-        warped_x, warped_y = warped_coordinate[0, 0] / FRAME_WIDTH, warped_coordinate[1, 0] / FRAME_WIDTH
-        warped_landmark_coordinate = (warped_x, warped_y)
-        # TODO: check if the new coordinates are in bounds
+        warped_x, warped_y = warped_coordinate[0, 0], warped_coordinate[1, 0]
+
         # if in bounds, normalize it compared to the segmented images and return it
+        relative_coordinates = convert_to_relative([warped_x, warped_y], warped_hull_points)
+        if relative_coordinates:
+            # now, convert these coordinates to be normalized in the segmented image
+            segmented_x_length = warped_hull_points[1][0] - warped_hull_points[0][0]
+            segmented_y_length = warped_hull_points[2][1] - warped_hull_points[0][1]
+            warped_landmark_coordinate = [relative_coordinates[0] / segmented_x_length, relative_coordinates[1] / segmented_y_length]
 
 
     return (warped_image, warped_landmark_coordinate)
