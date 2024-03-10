@@ -5,6 +5,7 @@ import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from cursor_movement import *
+from display_segmentation.segment_text import applySegmentation
 
 # Create a gesture recognizer instance with the live stream mode:
 def print_result(result: mp.tasks.vision.GestureRecognizerResult, output_image: mp.Image, timestamp_ms: int):
@@ -168,11 +169,14 @@ with handDetector(maxHands=1) as hands:
         image = cv2.undistort(image, cameraMatrix, dist, None, newCameraMatrix)
         x, y, w, h = roi
         image = image[y:y+h, x:x+w]
+        # get coordinates
         image, landmark = hands.findHands(image)
+        # segment
+        image, landmark = applySegmentation(image, landmark)
 
         if landmark:
-            landmark_x = landmark.x 
-            landmark_y = landmark.y 
+            landmark_x = landmark[0]
+            landmark_y = landmark[1] 
             
             # get screen size
             screen_x, screen_y = getScreenSize()
