@@ -90,7 +90,6 @@ class handDetector():
                     # iterate through the landmarks to get the 8th one
                     for landmark_index, landmark in enumerate(handlms.landmark):
                         if landmark_index == 8:
-                            print("index finger point:", landmark)# TESTING
                             index_landmark = landmark
                             # unnormalize it
                             index_landmark.x = index_landmark.x * FRAME_WIDTH

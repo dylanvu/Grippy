@@ -182,7 +182,7 @@ def order_points(pts):
     # bottom-right, and bottom-left order
     return np.array([tl, tr, br, bl], dtype="float32")
 
-width, height = 800, 600
+width, height = FRAME_WIDTH, FRAME_HEIGHT
 
 # the main function
 def segmentImage(image):
