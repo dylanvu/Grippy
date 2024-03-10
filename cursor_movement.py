@@ -62,6 +62,13 @@ def screenShot():
     filename = f"screenshot_{timestamp}.png"  # Construct a filename with the timestamp
     pyautogui.screenshot(filename)
 
+# keyboard write
+def writeKeyboard(string):
+    pyautogui.write(string)
+
+# delete word ctrl + backspace
+def deleteWord():
+    pyautogui.hotkey('ctrl', 'backspace')
     
 # function to test other functions
 def debug():
@@ -121,7 +128,7 @@ def scrollDebug():
     scrollCursor(start_y, end_y)
 
 def main():
-    scrollDebug()
+    writeKeyboard("Hello")
     
 
 if __name__ == "__main__":
