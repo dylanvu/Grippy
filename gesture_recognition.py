@@ -87,7 +87,7 @@ class handDetector():
                     # iterate through the landmarks to get the 8th one
                     for landmark_index, landmark in enumerate(handlms.landmark):
                         if landmark_index == 8:
-                            print("index finger point:", landmark)# TESTING
+                            # print("index finger point:", landmark)# TESTING
                             index_landmark = landmark
 
         return (img, index_landmark)
@@ -130,70 +130,69 @@ class handDetector():
         return (top_gesture, hand_landmarks)
     
     
+if __name__ == '__main__':
+    # For webcam input:
+    print("Initializing video")
+    cap = cv2.VideoCapture(0)
 
+    print("Shaping video")
+    cap.set(3, 1920)
+    cap.set(4, 1080)
 
-# For webcam input:
-print("Initializing video")
-cap = cv2.VideoCapture(0)
+    # Camera, fixing fisheye
+    cameraMatrix = np.genfromtxt("./camera_matrix.txt")
+    dist = np.genfromtxt("./distortion.txt")
 
-print("Shaping video")
-cap.set(3, 1920)
-cap.set(4, 1080)
+    print("Getting adjusted camera matrix")
 
-# Camera, fixing fisheye
-cameraMatrix = np.genfromtxt("./camera_matrix.txt")
-dist = np.genfromtxt("./distortion.txt")
+    ret, frame = cap.read()
+    h, w = frame.shape[:2]
 
-print("Getting adjusted camera matrix")
+    newCameraMatrix, roi = cv2. getOptimalNewCameraMatrix(cameraMatrix, dist, (w, h), 1, (w, h))
 
-ret, frame = cap.read()
-h, w = frame.shape[:2]
+    with handDetector(maxHands=1) as hands:
+        while cap.isOpened():
+            timestamp = int(time.time() * 1000) # current time in miliseconds
 
-newCameraMatrix, roi = cv2. getOptimalNewCameraMatrix(cameraMatrix, dist, (w, h), 1, (w, h))
+            # timestamp = mp.Timestamp() / 1000 # TESTING
+            success, image = cap.read()
+            if not success:
+                print("Ignoring empty camera frame.")
+                # If loading a video, use 'break' instead of 'continue'.
+                continue
+                
+            # flip
+            # image = cv2.flip(image, 1)
+            # undistort
+            image = cv2.undistort(image, cameraMatrix, dist, None, newCameraMatrix)
+            x, y, w, h = roi
+            image = image[y:y+h, x:x+w]
+            image, landmark = hands.findHands(image)
 
-with handDetector(maxHands=1) as hands:
-    while cap.isOpened():
-        timestamp = int(time.time() * 1000) # current time in miliseconds
-
-        # timestamp = mp.Timestamp() / 1000 # TESTING
-        success, image = cap.read()
-        if not success:
-            print("Ignoring empty camera frame.")
-            # If loading a video, use 'break' instead of 'continue'.
-            continue
+            if landmark:
+                landmark_x = landmark.x 
+                landmark_y = landmark.y 
+                
+                # get screen size
+                screen_x, screen_y = getScreenSize()
+                
+                # normalizing screen size
+                new_screen_x = landmark_x * screen_x
+                new_screen_y = landmark_y * screen_y
+                
+                moveCursor(new_screen_x, new_screen_y)
             
-        # flip
-        # image = cv2.flip(image, 1)
-        # undistort
-        image = cv2.undistort(image, cameraMatrix, dist, None, newCameraMatrix)
-        x, y, w, h = roi
-        image = image[y:y+h, x:x+w]
-        image, landmark = hands.findHands(image)
-
-        if landmark:
-            landmark_x = landmark.x 
-            landmark_y = landmark.y 
             
-            # get screen size
-            screen_x, screen_y = getScreenSize()
-            
-            # normalizing screen size
-            new_screen_x = landmark_x * screen_x
-            new_screen_y = landmark_y * screen_y
-            
-            moveCursor(new_screen_x, new_screen_y)
-        
-        
-        # lmlist = hands.findPosition(image)
-        # hands.findPosition(image)
-        # print(lmlist)
+            # lmlist = hands.findPosition(image)
+            # hands.findPosition(image)
+            # print(lmlist)
 
 
-        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
-        top_gesture, hand_landmarks = hands.recognizeGesture(mp_image, timestamp)
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
+            top_gesture, hand_landmarks = hands.recognizeGesture(mp_image, timestamp)
 
-        cv2.imshow('MediaPipe Hands', cv2.flip(image, 1))
-        if cv2.waitKey(5) & 0xFF == 27:
-            break
-cap.release()
-cv2.destroyAllWindows() 
+            cv2.imshow('MediaPipe Hands', cv2.flip(image, 1))
+            if cv2.waitKey(5) & 0xFF == 27:
+                break
+    cap.release()
+    cv2.destroyAllWindows() 
