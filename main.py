@@ -95,7 +95,9 @@ def video_recognition():
             # mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
             # top_gesture, hand_landmarks = hands.recognizeGesture(mp_image, timestamp)
 
-            cv2.imshow('MediaPipe Hands', image)
+            imS = cv2.resize(image, (960, 540))  
+
+            cv2.imshow('MediaPipe Hands', imS)
             # plt.imshow(image)
             # plt.axis('off')  # Hide the axes
             # plt.show()
@@ -108,12 +110,12 @@ def video_recognition():
 def transcribe_speech():
     speech_transcriber = SpeechTranscriber(api_on=False)
     speech_transcriber.add_commands({
-        ("click", "clique", "clicks", "cloak", "klick"): lambda _: clickCursor(True, 'left'),
+        ("click", "clique", "clicks", "cloak", "klick", "clic"): lambda _: clickCursor(True, 'left'),
         ("left click", "lift klick", "left-click", "left clack", "left cluck"): lambda _: clickCursor(True, 'left'),
         ("right click", "right-click", "right klick", "right clack", "rite click"): lambda _: clickCursor(True, 'right'),
         ("refresh", "refresher page",): lambda _: print("refresh page command received") ,
         ("screenshot", "screen shot", "screen pot", "screen spot", "screen jot"): lambda _: screenShot(),
-        ("keyboard", "chordboard", "keyward", "keybored"): lambda phrase: keyboard(phrase),
+        ("keyboard", "chordboard", "keyward", "keybored", "type", "pipe", "pike", "tipe", "tripe", "tyke", "ripe", "typek"): lambda phrase: keyboard(phrase),
         ("quit", "kit", "quite", "quid", "quilt", "quick"): lambda _: sys.exit()
     })
     speech_transcriber.main_loop()
